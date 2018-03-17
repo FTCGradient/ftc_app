@@ -362,6 +362,8 @@ for (int i=0;i<3;i++) {
         }
     }
 }
+
+/////////////////////////////////////////////////////////////////////////
             if (colorSensor.red() > colorSensor.blue()) {
     glyph = 1;}
     else { glyph = 2;
@@ -372,7 +374,7 @@ if (Cryptobox[0][0] == 1) {
         Yward(-1, ToCrypto);
         Cryptobox[0][2] = 1;
     }
-    else {/*glyph = 2*/
+    else {//glyph = 2
         Yward(-1, ToCrypto);
         Cryptobox[0][1] = 2;
     }
@@ -384,7 +386,7 @@ if (Cryptobox[0][0] == 1) {
             Yward(-1, ToCrypto);
             Cryptobox[0][0] = 1;
         }
-        else {/*glyph = 2*/
+        else {//glyph = 2
             Xward(-1, OneC);
             Yward(-1, ToCrypto);
             Cryptobox [0][2] = 2;
