@@ -57,8 +57,8 @@ public class TO extends OpMode {
         motorBackRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         motorBackLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-//        motorWheelRight = hardwareMap.dcMotor.get("mWR");
-//        motorWheelLeft = hardwareMap.dcMotor.get("mWL");
+        motorWheelRight = hardwareMap.dcMotor.get("mWR");
+        motorWheelLeft = hardwareMap.dcMotor.get("mWL");
 //
 //        motorLiftLeft = hardwareMap.dcMotor.get("mLL");
 //        motorLiftRight = hardwareMap.dcMotor.get("mLR");
@@ -281,9 +281,9 @@ public class TO extends OpMode {
 //
 //
 //
-//        motorWheelRight.setPower(gamepad2.right_stick_y);
-//        motorWheelLeft.setPower(gamepad2.left_stick_y);
-//
+        motorWheelRight.setPower(gamepad2.right_stick_y);
+        motorWheelLeft.setPower(gamepad2.left_stick_y);
+
 //        if(gamepad1.a){
 //            motorWheelRight.setPower(-0.7);
 //            motorWheelLeft.setPower(0.7);

@@ -1,20 +1,13 @@
 package org.firstinspires.ftc.teamcode;
 
-import android.graphics.Color;
-
 import com.disnodeteam.dogecv.CameraViewDisplay;
-import com.disnodeteam.dogecv.detectors.CryptoboxDetector;
+import com.disnodeteam.dogecv.detectors.GlyphDetector;
 import com.disnodeteam.dogecv.detectors.JewelDetector;
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cGyro;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.eventloop.opmode.OpMode;
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorController;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.IntegratingGyroscope;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.ServoController;
@@ -76,7 +69,9 @@ public class TestAutoBack extends LinearOpMode {
             pFR,pFR1,pFR2,pFR3, pFRS;
 
 
-    int Column, JewelPosition, Alliance, a;
+
+    private GlyphDetector glyphDetector = null;
+    int Cryptobox[][], Sipher,JewelPosition, Alliance, a, Column, glyph, OneC = 1000, TwoC = 2000, ToCrypto = 5000;
     double power = 1;
 
     private JewelDetector jewelDetector = null;
@@ -101,9 +96,9 @@ public class TestAutoBack extends LinearOpMode {
         motorBackLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
 
-//        motorWheelRight = hardwareMap.dcMotor.get("mWR");
-//        motorWheelLeft = hardwareMap.dcMotor.get("mWL");
-//
+        motorWheelRight = hardwareMap.dcMotor.get("mWR");
+        motorWheelLeft = hardwareMap.dcMotor.get("mWL");
+
 //        motorLiftRight = hardwareMap.dcMotor.get("mLR");
 //        motorLiftLeft = hardwareMap.dcMotor.get("mLL");
 
@@ -131,29 +126,39 @@ public class TestAutoBack extends LinearOpMode {
         jewelDetector.enable();
 
 
-        modernRoboticsI2cGyro = hardwareMap.get(ModernRoboticsI2cGyro.class, "gyro");
-
-        gyro = (IntegratingGyroscope) modernRoboticsI2cGyro;
+//        modernRoboticsI2cGyro = hardwareMap.get(ModernRoboticsI2cGyro.class, "gyro");
+//
+//        gyro = (IntegratingGyroscope) modernRoboticsI2cGyro;
 
         telemetry.addData("vu", "Wait");
         telemetry.update();
 
-        colorSensor = hardwareMap.get(ColorSensor.class, "sensor_color");
-        colorSensor.enableLed(true);
+//        colorSensor = hardwareMap.get(ColorSensor.class, "sensor_color");
+//        colorSensor.enableLed(true);
 
-        modernRoboticsI2cGyro.calibrate();
-        while (!isStopRequested() && modernRoboticsI2cGyro.isCalibrating()) {
-            telemetry.addData("calibrating", "%s", Math.round(timer.seconds()) % 2 == 0 ? "|.." : "..|");
-            telemetry.update();
-            sleep(50);
-        }
-
-        telemetry.log().clear();
-        telemetry.log().add("Gyro Calibrated. Press Start.");
-        telemetry.clear();
-        telemetry.update();
+//        modernRoboticsI2cGyro.calibrate();
+//        while (!isStopRequested() && modernRoboticsI2cGyro.isCalibrating()) {
+//            telemetry.addData("calibrating", "%s", Math.round(timer.seconds()) % 2 == 0 ? "|.." : "..|");
+//            telemetry.update();
+//            sleep(50);
+//        }
+//
+//        telemetry.log().clear();
+//        telemetry.log().add("Gyro Calibrated. Press Start.");
+//        telemetry.clear();
+//        telemetry.update();
 
         waitForStart();
+        motorWheelRight.setPower(1);
+        motorWheelLeft.setPower(-1);
+        Yward(0.05, 2000);
+        sleep(1000);
+        motorWheelRight.setPower(0);
+        motorWheelLeft.setPower(0);
+
+//        Yward(0.8, 2000);
+//        sleep(2000);
+//        Yward(1, 2000);
 //
         if (jewelDetector.getLastOrder().toString() == "BLUE_RED") {
             telemetry.addData("JPosition", "BLUE_RED");
@@ -177,65 +182,77 @@ public class TestAutoBack extends LinearOpMode {
         }
 
 
+        int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
+        VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters(cameraMonitorViewId);
 
-            int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
-            VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters(cameraMonitorViewId);
+        parameters.vuforiaLicenseKey = "AVGtR4z/////AAAAGR7mv1T9Kk+et5FMVOb0TCEbVxtoc9LEJLzfu6cbgmf8/dTA5Z9FlMw78GFgMsytU5MnyRBKOm+ruNNfz5liVnNaB/5ktZUMGJmEkONfo+0PeZ5GkZyahlZ+QK/BUtVggdorofC9GUHL+Jcnk/67gr+fqWJL/aZgREfCecRXRCfBJ+vVqDT9kVq+Pg5+9kfDThuN4QD8M00w+IJrDwTw8dL2GvLQRtH/ylgVJ5of2mhYVXzPsizjLSojDCr5iGRQJ/0FfKrw3gbGoxZ+rg44OkvtfjFoMIuQLhpP5warc1CToeMQPSAdNQLZbEgjup2OZ8pWtdZLT4BWzg5w9rJGL/ryQWuFt52DHsxD5dk+ax4c";
 
-            parameters.vuforiaLicenseKey = "AVGtR4z/////AAAAGR7mv1T9Kk+et5FMVOb0TCEbVxtoc9LEJLzfu6cbgmf8/dTA5Z9FlMw78GFgMsytU5MnyRBKOm+ruNNfz5liVnNaB/5ktZUMGJmEkONfo+0PeZ5GkZyahlZ+QK/BUtVggdorofC9GUHL+Jcnk/67gr+fqWJL/aZgREfCecRXRCfBJ+vVqDT9kVq+Pg5+9kfDThuN4QD8M00w+IJrDwTw8dL2GvLQRtH/ylgVJ5of2mhYVXzPsizjLSojDCr5iGRQJ/0FfKrw3gbGoxZ+rg44OkvtfjFoMIuQLhpP5warc1CToeMQPSAdNQLZbEgjup2OZ8pWtdZLT4BWzg5w9rJGL/ryQWuFt52DHsxD5dk+ax4c";
+        parameters.cameraDirection = VuforiaLocalizer.CameraDirection.BACK;
+        this.vuforia = ClassFactory.createVuforiaLocalizer(parameters);
 
-            parameters.cameraDirection = VuforiaLocalizer.CameraDirection.BACK;
-            this.vuforia = ClassFactory.createVuforiaLocalizer(parameters);
+        VuforiaTrackables relicTrackables = this.vuforia.loadTrackablesFromAsset("RelicVuMark");
+        VuforiaTrackable relicTemplate = relicTrackables.get(0);
+        relicTemplate.setName("relicVuMarkTemplate");
+        sleep(5000);
+        relicTrackables.activate();
 
-            VuforiaTrackables relicTrackables = this.vuforia.loadTrackablesFromAsset("RelicVuMark");
-            VuforiaTrackable relicTemplate = relicTrackables.get(0);
-            relicTemplate.setName("relicVuMarkTemplate");
+        while (opModeIsActive() && Column == 0) {
+            RelicRecoveryVuMark vuMark = RelicRecoveryVuMark.from(relicTemplate);
 
-            relicTrackables.activate();
+            if (vuMark != RelicRecoveryVuMark.UNKNOWN) {
 
-            while (opModeIsActive() && Column == 0) {
-                RelicRecoveryVuMark vuMark = RelicRecoveryVuMark.from(relicTemplate);
+                telemetry.addData("VuMark", "%s visible", vuMark);
 
-                if (vuMark != RelicRecoveryVuMark.UNKNOWN) {
+                OpenGLMatrix pose = ((VuforiaTrackableDefaultListener) relicTemplate.getListener()).getPose();
+                telemetry.addData("Pose", format(pose));
 
-                    telemetry.addData("VuMark", "%s visible", vuMark);
+                if (pose != null) {
+                    VectorF trans = pose.getTranslation();
+                    Orientation rot = Orientation.getOrientation(pose, AxesReference.EXTRINSIC, AxesOrder.XYZ, AngleUnit.DEGREES);
 
-                    OpenGLMatrix pose = ((VuforiaTrackableDefaultListener) relicTemplate.getListener()).getPose();
-                    telemetry.addData("Pose", format(pose));
+                    double tX = trans.get(0);
+                    double tY = trans.get(1);
+                    double tZ = trans.get(2);
 
-                    if (pose != null) {
-                        VectorF trans = pose.getTranslation();
-                        Orientation rot = Orientation.getOrientation(pose, AxesReference.EXTRINSIC, AxesOrder.XYZ, AngleUnit.DEGREES);
-
-                        double tX = trans.get(0);
-                        double tY = trans.get(1);
-                        double tZ = trans.get(2);
-
-                        double rX = rot.firstAngle;
-                        double rY = rot.secondAngle;
-                        double rZ = rot.thirdAngle;
-                    }
-                    if (vuMark == RelicRecoveryVuMark.LEFT) {
-                        Column = 1;
-                    }
-                    if (vuMark == RelicRecoveryVuMark.RIGHT) {
-                        Column = 2;
-                    }
-                    if (vuMark == RelicRecoveryVuMark.CENTER) {
-                        Column = 3;
-                    }
-                } else {
-                    telemetry.addData("VuMark", "not visible");
+                    double rX = rot.firstAngle;
+                    double rY = rot.secondAngle;
+                    double rZ = rot.thirdAngle;
                 }
-
-                telemetry.update();
+                if (vuMark == RelicRecoveryVuMark.LEFT) {
+                    Column = 1;
+                    Cryptobox[0][0] = 1;
+                }
+                if (vuMark == RelicRecoveryVuMark.RIGHT) {
+                    Column = 2;
+                    Cryptobox[0][2] = 1;
+                }
+                if (vuMark == RelicRecoveryVuMark.CENTER) {
+                    Column = 3;
+                    Cryptobox[0][1] = 1;
+                }
+            } else {
+                telemetry.addData("VuMark", "not visible");
             }
 
-
+            telemetry.update();
+        }
+        relicTrackables.deactivate();
+        sleep(3000);
+        telemetry.addData("123", 123);
+        telemetry.update();
+        glyphDetector = new GlyphDetector();
+        glyphDetector.init(hardwareMap.appContext, CameraViewDisplay.getInstance());
+        glyphDetector.minScore = 1;
+        glyphDetector.downScaleFactor = 0.3;
+        glyphDetector.speed = GlyphDetector.GlyphDetectionSpeed.SLOW;
+        glyphDetector.enable();
+        sleep(5000);
+        glyphDetector.disable();
         if (Alliance == 1) {//red
             if (JewelPosition == 1) {//Blue-Red
 //                servoJewelRight.setPosition(0.35);
                 sleep(500);
-                Yward(0.3,1000);
+                Yward(0.3, 1000);
 //                servoJewelRight.setPosition(0.9);
             } else {//Red-Blue
 //                servoJewelRight.setPosition(0.35);
@@ -260,7 +277,7 @@ public class TestAutoBack extends LinearOpMode {
             if (JewelPosition == 2) {//red-blue
 //                servoJewelLeft.setPosition(0.35);
                 sleep(500);
-                Yward(0.3,1000);
+                Yward(0.3, 1000);
 //                servoJewelLeft.setPosition(0.9);
             } else {//Red-Blue
 //                servoJewelLeft.setPosition(0.35);
@@ -291,14 +308,104 @@ public class TestAutoBack extends LinearOpMode {
 
             Yward(-0.2, 300);
 
+for (int i=0;i<3;i++) {
+    if (c[c][k]== 0){
+
+    }
+
+
+    if (colorSensor.red() > colorSensor.blue()) {
+        switch (Cr[i]) {
+            case 1:
+                Xward(-1, 1000);
+                Yward(-1, 1000);
+                //qwe
+                Cryptobox[i+1]=2;
+                break;
+            case 2:
+                Xward(1, 1000);
+                Yward(-1, 1000);
+                //qwe
+                Cryptobox[i+1]=1;
+                break;
+            case 3:
+                Sipher = 1;
+                telemetry.addData("Sipher", "SNAKE");
+                telemetry.update();
+                Xward(1, 1000);
+                Yward(-1, 1000);
+                //qwe
+                Cryptobox[i+1]=1;
+                break;
+
+        }
+    } else {
+        switch (Cryptobox[i]) {
+            case 1:
+                Xward(-1, 500);
+                Yward(-1, 1000);
+                //qwe
+                Cryptobox[i+1]=3;
+                break;
+            case 2:
+                Xward(1, 500);
+                Yward(-1, 1000);
+                //qwe
+                Cryptobox[i+1]=3;
+                break;
+            case 3:
+                Xward(-1, 1000);
+                Yward(-1, 1000);
+                //qwe
+                Cryptobox[i+1]=2;
+                break;
+        }
+    }
+}
+            if (colorSensor.red() > colorSensor.blue()) {
+    glyph = 1;}
+    else { glyph = 2;
+            }
+if (Cryptobox[0][0] == 1) {
+    if (glyph == 1) {
+        Xward(-1, OneC);
+        Yward(-1, ToCrypto);
+        Cryptobox[0][2] = 1;
+    }
+    else {/*glyph = 2*/
+        Yward(-1, ToCrypto);
+        Cryptobox[0][1] = 2;
+    }
+}
+    else {
+    if (Cryptobox[0][1] == 1){
+        if (glyph == 1){
+            Xward(1, OneC);
+            Yward(-1, ToCrypto);
+            Cryptobox[0][0] = 1;
+        }
+        else {/*glyph = 2*/
+            Xward(-1, OneC);
+            Yward(-1, ToCrypto);
+            Cryptobox [0][2] = 2;
+        }
+
+    }
+    if (Cryptobox[0][2] == 2){
+        
+    }
+}
+
+
 //
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////            Alliance = 2;
-////            Column = 1;
+////            Cryptobox = 1;
 //            ///////////////////////////////////////////////////////////////////////////////////////////
 
         }
     }
+
 
 
     String format(OpenGLMatrix transformationMatrix) {
